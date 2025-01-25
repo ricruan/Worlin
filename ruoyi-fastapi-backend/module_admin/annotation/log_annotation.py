@@ -172,28 +172,31 @@ class Log:
 
                     await LoginLogService.add_login_log_services(query_db, LogininforModel(**login_log))
             else:
-                current_user = await LoginService.get_current_user(request, token, query_db)
-                oper_name = current_user.user.user_name
-                dept_name = current_user.user.dept.dept_name if current_user.user.dept else None
-                operation_log = OperLogModel(
-                    title=self.title,
-                    businessType=self.business_type,
-                    method=func_path,
-                    requestMethod=request_method,
-                    operatorType=operator_type,
-                    operName=oper_name,
-                    deptName=dept_name,
-                    operUrl=oper_url,
-                    operIp=oper_ip,
-                    operLocation=oper_location,
-                    operParam=oper_param,
-                    jsonResult=json_result,
-                    status=status,
-                    errorMsg=error_msg,
-                    operTime=oper_time,
-                    costTime=int(cost_time),
-                )
-                await OperationLogService.add_operation_log_services(query_db, operation_log)
+                    if token is None:
+                        logger.info("token为空")
+                        return
+                    current_user = await LoginService.get_current_user(request, token, query_db)
+                    oper_name = current_user.user.user_name
+                    dept_name = current_user.user.dept.dept_name if current_user.user.dept else None
+                    operation_log = OperLogModel(
+                        title=self.title,
+                        businessType=self.business_type,
+                        method=func_path,
+                        requestMethod=request_method,
+                        operatorType=operator_type,
+                        operName=oper_name,
+                        deptName=dept_name,
+                        operUrl=oper_url,
+                        operIp=oper_ip,
+                        operLocation=oper_location,
+                        operParam=oper_param,
+                        jsonResult=json_result,
+                        status=status,
+                        errorMsg=error_msg,
+                        operTime=oper_time,
+                        costTime=int(cost_time),
+                    )
+                    await OperationLogService.add_operation_log_services(query_db, operation_log)
 
             return result
 

@@ -22,6 +22,7 @@ from module_admin.controller.post_controler import postController
 from module_admin.controller.role_controller import roleController
 from module_admin.controller.server_controller import serverController
 from module_admin.controller.user_controller import userController
+from module_coding.controller.wr_problem_controller import wrProblemController
 from sub_applications.handle import handle_sub_applications
 from utils.common_util import worship
 from utils.log_util import logger
@@ -45,9 +46,9 @@ async def lifespan(app: FastAPI):
 
 # 初始化FastAPI对象
 app = FastAPI(
-    title=AppConfig.app_name,
-    description=f'{AppConfig.app_name}接口文档',
-    version=AppConfig.app_version,
+    # title=AppConfig.app_name,
+    # description=f'{AppConfig.app_name}接口文档',
+    # version=AppConfig.app_version,
     lifespan=lifespan,
 )
 
@@ -61,6 +62,7 @@ handle_exception(app)
 
 # 加载路由列表
 controller_list = [
+    {'router': wrProblemController, 'tags': ['worlin-问题管理']},
     {'router': loginController, 'tags': ['登录模块']},
     {'router': captchaController, 'tags': ['验证码模块']},
     {'router': userController, 'tags': ['系统管理-用户管理']},

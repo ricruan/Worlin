@@ -29,6 +29,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 WORKDIR /app
 COPY . /app
 
+# 默认选择 prod 环境
+COPY .env.prod /app/.env
+
+# Set the APP_ENV environment variable to 'prod'
+ENV APP_ENV prod
 
 
 # Creates a non-root user with an explicit UID and adds permission to access the /app folder

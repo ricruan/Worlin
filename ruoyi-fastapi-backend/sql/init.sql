@@ -710,3 +710,23 @@ create table gen_table_column (
   update_time       datetime                                   comment '更新时间',
   primary key (column_id)
 ) engine=innodb auto_increment=1 comment = '代码生成业务表字段';
+
+DROP TABLE IF EXISTS `wr_problem`;
+CREATE TABLE `wr_problem` (
+  `id` varchar(255) NOT NULL COMMENT '问题标识',
+  `problem_title` varchar(255) DEFAULT NULL COMMENT '问题标题',
+  `problem_tags` varchar(255) DEFAULT NULL COMMENT '问题标签',
+  `problem_content` longtext  COMMENT '问题内容',
+  `language_type` varchar(50) DEFAULT NULL COMMENT '语言类型 (mysql、oracle)',
+  `problem_type` varchar(20) DEFAULT NULL COMMENT '问题类型（选择题、编程题、填空题、问答题）',
+  `difficulty_level` varchar(20) DEFAULT NULL COMMENT '难度层级 （难度层级）',
+  `preset_code` longtext  COMMENT '预设代码',
+  `test_cases_answers`  longtext COMMENT '测试用例\\答案',
+  `enable_flag` char(1) DEFAULT '1'  COMMENT '启用标识 （是否启用）',
+  `create_by` varchar(64) DEFAULT NULL COMMENT '创建者',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_by` varchar(64) DEFAULT NULL COMMENT '更新者',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  `del_flag` char(1) DEFAULT '0' COMMENT '逻辑删除标识',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='题目表';

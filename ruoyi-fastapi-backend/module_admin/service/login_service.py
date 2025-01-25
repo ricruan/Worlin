@@ -183,7 +183,7 @@ class LoginService:
     @classmethod
     async def get_current_user(
         cls, request: Request = Request, token: str = Depends(oauth2_scheme), query_db: AsyncSession = Depends(get_db)
-    ):
+    ) -> CurrentUserModel :
         """
         根据token获取当前用户信息
 
@@ -197,6 +197,8 @@ class LoginService:
         #     logger.warning("用户token不合法")
         #     raise AuthException(data="", message="用户token不合法")
         try:
+            print("进入了 获取当前用户的函数")
+            print(token)
             if token.startswith('Bearer'):
                 token = token.split(' ')[1]
             payload = jwt.decode(token, JwtConfig.jwt_secret_key, algorithms=[JwtConfig.jwt_algorithm])
@@ -246,6 +248,7 @@ class LoginService:
             current_user = CurrentUserModel(
                 permissions=permissions,
                 roles=roles,
+                user_id = user_id,
                 user=UserInfoModel(
                     **CamelCaseUtil.transform_result(query_user.get('user_basic_info')),
                     postIds=post_ids,

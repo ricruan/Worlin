@@ -117,11 +117,13 @@ class UserInfoModel(UserModel):
     role_ids: Optional[Union[str, None]] = Field(default=None, description='角色ID信息')
     dept: Optional[Union[DeptModel, None]] = Field(default=None, description='部门信息')
     role: Optional[List[Union[RoleModel, None]]] = Field(default=[], description='角色信息')
+    user_id: Optional[int] = Field(default=None, description='用户ID')
+
 
 
 class CurrentUserModel(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel)
-
+    user_id: Optional[int] = Field(default=None, description='用户ID')
     permissions: List = Field(description='权限信息')
     roles: List = Field(description='角色信息')
     user: Union[UserInfoModel, None] = Field(description='用户信息')
