@@ -2,10 +2,11 @@
 	<img alt="logo" src="https://oscimg.oschina.net/oscnet/up-d3d0a9303e11d522a06cd263f3079027715.png">
 </p>
 <h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">RuoYi-Vue3-FastAPI v1.5.1</h1>
-<h4 align="center">基于RuoYi-Vue3+FastAPI前后端分离的快速开发框架</h4>
+<h4 align="center">基于-Vue3+FastAPI前后端分离的快速开发框架</h4>
 
 ## 项目开发及发布相关
 
+pip freeze > requirements.txt
 
 #### 前端
 ```bash
@@ -27,9 +28,21 @@ npm run dev 或 yarn dev
 # 进入后端目录
 cd ruoyi-fastapi-backend
 
-# 如果使用的是MySQL数据库，请执行以下命令安装项目依赖环境
+# 启动虚拟环境
+python3 -m venv .venv
+
+# 激活虚拟环境
+source .venv/bin/activate
+
+ *   请使用你实际的虚拟环境路径。
+ 
+# 安装依赖项
+pip install -r requirements.txt
+
+
+# (已弃用，仅参考)如果使用的是MySQL数据库，请执行以下命令安装项目依赖环境
 pip3 install -r requirements.txt
-# 如果使用的是PostgreSQL数据库，请执行以下命令安装项目依赖环境
+# (已弃用，仅参考)如果使用的是PostgreSQL数据库，请执行以下命令安装项目依赖环境
 pip3 install -r requirements-pg.txt
 
 # 配置环境
@@ -72,4 +85,10 @@ npm run build:prod 或 yarn build:prod
 # 运行后端
 python3 app.py --env=prod
 ```
+
+#### 技术介绍
+
+
+
+
 
