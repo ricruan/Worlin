@@ -6,7 +6,11 @@
 
 ## 项目开发及发布相关
 
+#### 开发参考
+``` bash
+#  将最新后端资源包到出到 requirements.txt
 pip freeze > requirements.txt
+```
 
 #### 前端
 ```bash
@@ -81,6 +85,7 @@ npm run build:prod 或 yarn build:prod
 ```bash
 # 配置环境
 在.env.prod文件中配置生产环境的数据库和redis
+docker run -d --name my-redis -p 6379:6379 redis:latest
 
 # 运行后端
 python3 app.py --env=prod
