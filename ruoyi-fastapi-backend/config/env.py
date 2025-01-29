@@ -179,10 +179,13 @@ class GetConfig:
             # 使用argparse定义命令行参数
             parser = argparse.ArgumentParser(description='命令行参数')
             parser.add_argument('--env', type=str, default='', help='运行环境')
+            parser.add_argument('--reload', action='store_true', help='启用热加载')
             # 解析命令行参数
             args = parser.parse_args()
             # 设置环境变量，如果未设置命令行参数，默认APP_ENV为dev
             os.environ['APP_ENV'] = args.env if args.env else 'dev'
+            # 设置热加载环境变量
+            os.environ['APP_RELOAD'] = str(args.reload).lower()
         # 读取运行环境
         run_env = os.environ.get('APP_ENV', '')
         # 运行环境未指定时默认加载.env.dev

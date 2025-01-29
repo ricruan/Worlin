@@ -9,15 +9,15 @@ from utils.log_util import logger
 
 
 
+
 class WrProblemService:
     """问题Service
     """
 
     @classmethod
     async def getPageList(cls,query_db: AsyncSession,qeuryVo: WrProblemVO,pageSize: int= 10,pageNum: int= 1):
-        offset = (pageNum - 1) * pageSize
 
-        return await WrProblemDao.search_problems(query_db,qeuryVo,pageSize,offset)
+        return await WrProblemDao.search_problems(query_db,qeuryVo,pageSize,pageNum)
     
 
     @classmethod

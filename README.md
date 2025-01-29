@@ -52,12 +52,36 @@ pip3 install -r requirements-pg.txt
 # 配置环境
 在.env.dev文件中配置开发环境的数据库和redis
 
+# Redis配置说明
+1. 确保Redis服务已经正确安装并运行
+2. 检查.env.dev文件中的Redis配置，默认配置如下：
+   ```
+   REDIS_HOST=127.0.0.1  # Redis服务器地址
+   REDIS_PORT=6379       # Redis端口
+   REDIS_DB=0           # Redis数据库编号
+   REDIS_PASSWORD=      # Redis密码（如果有）
+   ```
+
+# 启动Redis服务
+# Linux/Mac环境
+redis-server
+
+# 或使用Docker运行Redis（确保Docker已安装）
+docker run -d --name ruoyi-redis \
+  -p 6379:6379 \
+  --restart always \
+  redis:latest
+
 # 运行sql文件
 1.新建数据库ruoyi-fastapi(默认，可修改)
 2.如果使用的是MySQL数据库，使用命令或数据库连接工具运行sql文件夹下的ruoyi-fastapi.sql；如果使用的是PostgreSQL数据库，使用命令或数据库连接工具运行sql文件夹下的ruoyi-fastapi-pg.sql
 
 # 运行后端
+# 确保Redis服务正在运行后再启动后端服务
 python3 app.py --env=dev
+
+# 以热加载模式运行后端
+uvicorn app:app --reload
 ```
 
 #### 访问
@@ -84,8 +108,16 @@ npm run build:prod 或 yarn build:prod
 #### 后端
 ```bash
 # 配置环境
-在.env.prod文件中配置生产环境的数据库和redis
-docker run -d --name my-redis -p 6379:6379 redis:latest
+1. 在.env.prod文件中配置生产环境的数据库和redis
+2. 确保Redis服务正常运行且可访问
+3. 检查Redis连接配置是否正确
+
+# 使用Docker运行Redis（生产环境）
+docker run -d --name ruoyi-redis \
+  -p 6379:6379 \
+  --restart always \
+  -v /path/to/redis/data:/data \
+  redis:latest
 
 # 运行后端
 python3 app.py --env=prod

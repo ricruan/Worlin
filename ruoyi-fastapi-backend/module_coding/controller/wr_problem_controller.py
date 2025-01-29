@@ -23,7 +23,8 @@ async def getList(
         queryVo: WrProblemPageVo = Depends(WrProblemPageVo.as_query),
         query_db: AsyncSession = Depends(get_db)) :
     problems = await WrProblemService.getPageList(query_db,queryVo,queryVo.page_size,queryVo.page_num)
-    return ResponseUtil.success(problems)
+
+    return ResponseUtil.success(data = problems)
 
     
 
@@ -32,7 +33,7 @@ async def insertOrUpdate(
         request: Request,
         queryVo: WrProblemVO,
         query_db: AsyncSession = Depends(get_db)) :
-    return ResponseUtil.success(await WrProblemService.insertOrUpdate(query_db,queryVo))
+    return ResponseUtil.success(data = await WrProblemService.insertOrUpdate(query_db,queryVo))
 
 
 @wrProblemController.delete("/deleteBatch")
@@ -41,4 +42,4 @@ async def deleteBatch(
         request: Request,
         ids: str,
         query_db: AsyncSession = Depends(get_db)) :
-    return ResponseUtil.success(await WrProblemService.deleteBatch(query_db,ids))
+    return ResponseUtil.success(data = await WrProblemService.deleteBatch(query_db,ids))

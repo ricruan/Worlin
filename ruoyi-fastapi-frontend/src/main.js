@@ -33,6 +33,10 @@ import Pagination from '@/components/Pagination'
 import RightToolbar from '@/components/RightToolbar'
 // 富文本组件
 import Editor from "@/components/Editor"
+// Monaco编辑器组件
+import MonacoEditor from "@/components/MysqlEditor/MonacoEditor/index.vue"
+// MysqlEditor组件
+import MysqlEditor from "@/components/MysqlEditor/index.vue"
 // 文件上传组件
 import FileUpload from "@/components/FileUpload"
 // 图片上传组件
@@ -65,6 +69,7 @@ app.component('ImageUpload', ImageUpload)
 app.component('ImagePreview', ImagePreview)
 app.component('RightToolbar', RightToolbar)
 app.component('Editor', Editor)
+app.component('MysqlEditor', MysqlEditor)
 
 app.use(router)
 app.use(store)

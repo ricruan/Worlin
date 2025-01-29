@@ -7,6 +7,7 @@ from module_coding.entity.vo.wr_problem_query_vo import WrProblemVO
 from module_coding.entity.bo.wr_problem_bo import wrProblem
 from utils.log_util import logger
 from uuid import uuid4
+from utils.page_util import PageUtil,PageResponseModel
 
 
 
@@ -92,19 +93,17 @@ class WrProblemDao:
         return list(problems)
      
     @classmethod
-    async def search_problems(cls,query_db: AsyncSession, queryVo: WrProblemVO, limit: int = 10, offset: int = 0) -> List[WrProblemVO]:
+    async def search_problems(cls, query_db: AsyncSession, queryVo: WrProblemVO, page_size: int = 10, page_num: int = 1) -> PageResponseModel:
         """
         根据关键字搜索题目
         """
         stmt = select(wrProblem)
         if queryVo.problem_title:
             stmt = stmt.where(wrProblem.problem_title.contains(queryVo.problem_title))
-		# TODO : 补充一下其他查询条件 
+        # TODO : 补充一下其他查询条件
 
-        stmt = stmt.limit(limit).offset(offset)
-
-        problems = (await query_db.execute(stmt)).scalars().all()
-        return list(problems)
+        result = await PageUtil.paginate(query_db, stmt, page_num, page_size, True)
+        return result
 		
 
 		
