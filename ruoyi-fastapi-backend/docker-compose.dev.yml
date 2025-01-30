@@ -1,0 +1,36 @@
+version: '3.8'
+services:
+  redis:
+    image: redis:latest
+    container_name: redis_dev
+    restart: unless-stopped
+    # environment:
+      # - REDIS_PASSWORD=myredispass
+    ports:
+      - "36379:6379"
+    volumes:
+      - /docker/my_dev/redis_data:/data
+    networks:
+      - my_dev_network
+    # command: redis-server --requirepass $${REDIS_PASSWORD}
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_dev
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: devdb
+      MYSQL_USER: devuser
+      MYSQL_PASSWORD: devpassword
+    ports:
+      - "33306:3306"
+    volumes:
+      - /docker/my_dev/mysql_data:/var/lib/mysql
+    networks:
+      - my_dev_network
+
+networks:
+  my_dev_network:
+    driver: bridge
+    
