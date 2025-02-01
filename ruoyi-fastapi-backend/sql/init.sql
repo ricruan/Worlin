@@ -716,7 +716,7 @@ CREATE TABLE `wr_problem` (
   `id` varchar(255) NOT NULL COMMENT '问题标识',
   `problem_title` varchar(255) DEFAULT NULL COMMENT '问题标题',
   `problem_tags` varchar(255) DEFAULT NULL COMMENT '问题标签',
-  `problem_content` longtext  COMMENT '问题内容',
+  `problem_content` BLOB COMMENT '问题内容',  -- 修改为 BLOB 类型
   `language_type` varchar(50) DEFAULT NULL COMMENT '语言类型 (mysql、oracle)',
   `problem_type` varchar(20) DEFAULT NULL COMMENT '问题类型（选择题、编程题、填空题、问答题）',
   `difficulty_level` varchar(20) DEFAULT NULL COMMENT '难度层级 （难度层级）',

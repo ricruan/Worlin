@@ -42,24 +42,28 @@
   import MonacoEditor from "./MonacoEditor/index.vue"; // 导入 MonacoEditor 组件
   
   const props = defineProps({
-    results:{
-      type:Array,
-        default:()=>[]
+    modelValue: {  // 改为 modelValue 以支持 v-model
+        type: String,
+        default: ''
     },
-      headers:{
-          type: Array,
-            default:()=>[]
-      },
-      errorMessage:{
-          type: String,
-          default: ""
-      }
-  })
+    results: {
+        type: Array,
+        default: () => []
+    },
+    headers: {
+        type: Array,
+        default: () => []
+    },
+    errorMessage: {
+        type: String,
+        default: ''
+    }
+  });
   
-  const emit = defineEmits(['execute']);
+  const emit = defineEmits(['update:modelValue', 'execute']);
   
   
-  const sqlCode = ref('');
+  const sqlCode = ref(props.modelValue);
   
   const monacoEditorRef = ref(null);
   const editorOptions = reactive({
@@ -82,9 +86,17 @@
   };
   
   
-  watch(()=> sqlCode.value, (newValue)=>{
-      console.log("sql code change:", newValue);
-  })
+  // 监听外部值的变化
+  watch(() => props.modelValue, (newVal) => {
+    if (newVal !== sqlCode.value) {
+        sqlCode.value = newVal;
+    }
+  });
+  
+  // 监听内部值的变化
+  watch(() => sqlCode.value, (newVal) => {
+    emit('update:modelValue', newVal);
+  });
   
   onMounted(() => {
     if (monacoEditorRef.value) {

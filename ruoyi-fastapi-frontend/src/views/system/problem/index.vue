@@ -249,32 +249,46 @@
             
             <el-form ref="editFormRef" :model="editPageForm" class="edit-form-content">
                 <el-form-item label="问题标题">
-                    <el-input v-model="editPageForm.problem_title"></el-input>
+                    <el-input v-model="editPageForm.problemTitle"></el-input>
                 </el-form-item>
                 <el-form-item label="问题标签">
-                    <el-input v-model="editPageForm.problem_tags"></el-input>
+                    <el-input v-model="editPageForm.problemTags"></el-input>
                 </el-form-item>
                 <el-form-item label="语言类型">
-                    <el-input v-model="editPageForm.language_type"></el-input>
+                    <el-input v-model="editPageForm.languageType"></el-input>
                 </el-form-item>
                 <el-form-item label="问题类型">
-                    <el-input v-model="editPageForm.problem_type"></el-input>
+                    <el-input v-model="editPageForm.problemType"></el-input>
                 </el-form-item>
                 <el-form-item label="难度层级">
-                    <el-input v-model="editPageForm.difficulty_level"></el-input>
+                    <el-input v-model="editPageForm.difficultyLevel"></el-input>
                 </el-form-item>
                 <el-form-item label="问题内容">
-                    <editor v-model="editPageForm.problem_content"></editor>
+                    <editor v-model="editPageForm.problemContent"></editor>
                 </el-form-item>
                 <el-form-item label="预设代码">
-                    <MysqlEditor v-model="editPageForm.preset_code" :results="results" :headers="headers" :errorMessage="errorMessage"  @execute="handleSQL" ref="PreEditor"></MysqlEditor>
+                    <MysqlEditor 
+                        v-model="editPageForm.presetCode" 
+                        :results="results" 
+                        :headers="headers" 
+                        :errorMessage="errorMessage"  
+                        @execute="handleSQL" 
+                        ref="PreEditor"
+                    />
                 </el-form-item>
                 <el-form-item label="测试用例">
-                    <MysqlEditor v-model="editPageForm.test_cases_answers" :results="results" :headers="headers" :errorMessage="errorMessage"  @execute="handleSQL" ref="AnsEditor"></MysqlEditor>
+                    <MysqlEditor 
+                        v-model="editPageForm.testCasesAnswers" 
+                        :results="results" 
+                        :headers="headers" 
+                        :errorMessage="errorMessage"  
+                        @execute="handleSQL" 
+                        ref="AnsEditor"
+                    />
                 </el-form-item>
                 <el-form-item label="是否启用">
                     <el-switch
-                    v-model="editPageForm.enable_flag"
+                    v-model="editPageForm.enableFlag"
                     active-color="#13ce66"
                     inactive-color="#ff4949">
                     </el-switch>
@@ -287,9 +301,10 @@
  <script setup name="Problem">
 
  import { addRole, changeRoleStatus, dataScope, delRole, getRole, listRole, updateRole, deptTreeSelect } from "@/api/system/role";
- import { getPageList } from "@/api/system/problem";
+ import { getPageList,getDetail,insertOrUpdate,deleteBatch } from "@/api/system/problem";
 
  import { roleMenuTreeselect, treeselect as menuTreeselect } from "@/api/system/menu";
+ import MysqlEditor from "@/components/MysqlEditor/index.vue";
  
  const router = useRouter();
  const { proxy } = getCurrentInstance();
@@ -316,6 +331,11 @@
  const deptRef = ref(null);
 //  以下是新增的
 const showEditPage = ref(false);
+const results = ref([]);
+const headers = ref([]);
+const errorMessage = ref("");
+const PreEditor = ref(null);
+const AnsEditor = ref(null);
  
  /** 数据范围选项*/
  const dataScopeOptions = ref([
@@ -393,8 +413,31 @@ const { editPageForm } = toRefs(editPageData);
  function handleExport() {
    showEditPage.value = !showEditPage.value;
  }
- function submit(){
+ async function submit(){
+   try {
+     // 构造提交的数据
+     const submitData = {
+       ...editPageForm.value,
+       // 确保布尔值的正确转换
+       enableFlag: editPageForm.value.enableFlag ? 1 : 0
+     };
 
+     // 调用更新接口
+     const response = await insertOrUpdate(submitData);
+     
+     if (response.code === 200) {
+       proxy.$modal.msgSuccess("保存成功");
+       // 关闭编辑页面
+       showEditPage.value = false;
+       // 刷新列表
+       getList();
+     } else {
+       proxy.$modal.msgError(response.msg || "保存失败");
+     }
+   } catch (error) {
+     console.error("保存失败:", error);
+     proxy.$modal.msgError("保存失败，请稍后重试");
+   }
  }
  /** 多选框选中数据 */
  function handleSelectionChange(selection) {
@@ -476,26 +519,25 @@ const { editPageForm } = toRefs(editPageData);
    title.value = "添加角色";
  }
  /** 修改角色 */
- function handleUpdate(row) {
-   reset();
-   const roleId = row.roleId || ids.value;
-   const roleMenu = getRoleMenuTreeselect(roleId);
-   getRole(roleId).then(response => {
-     form.value = response.data;
-     form.value.roleSort = Number(form.value.roleSort);
-     open.value = true;
-     nextTick(() => {
-       roleMenu.then((res) => {
-         let checkedKeys = res.checkedKeys;
-         checkedKeys.forEach((v) => {
-           nextTick(() => {
-             menuRef.value.setChecked(v, true, false);
-           });
-         });
-       });
-     });
-     title.value = "修改角色";
-   });
+ async function handleUpdate(row) {
+   try {
+     // 获取详情数据
+     const problemId = row.id;
+     const response = await getDetail(problemId);
+     
+     // 将数据赋值给编辑表单
+     editPageForm.value = {
+       ...response.data,
+       presetCode: response.data.presetCode || '',
+       testCasesAnswers: response.data.testCasesAnswers || '',
+       enableFlag: response.data.enableFlag || 0
+     };
+     
+     // 显示编辑页面
+     showEditPage.value = true;
+   } catch (error) {
+     proxy.$modal.msgError('获取详情失败：' + (error.message || '未知错误'));
+   }
  }
  /** 根据角色ID查询菜单树结构 */
  function getRoleMenuTreeselect(roleId) {
@@ -618,6 +660,23 @@ const { editPageForm } = toRefs(editPageData);
    openDataScope.value = false;
    reset();
  }
+ 
+ // 添加 handleSQL 函数的实现
+ const handleSQL = async (sql, editor) => {
+   try {
+     // 这里可以添加执行 SQL 的逻辑
+     // 比如调用后端 API 执行 SQL
+     console.log('执行 SQL:', sql);
+     
+     // 模拟设置结果
+     results.value = [];
+     headers.value = [];
+     errorMessage.value = '';
+     
+   } catch (error) {
+     errorMessage.value = error.message || '执行 SQL 失败';
+   }
+ };
  
  getList();
  </script>

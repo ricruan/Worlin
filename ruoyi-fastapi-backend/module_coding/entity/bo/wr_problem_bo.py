@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import String, Text, DateTime
+from sqlalchemy import String, Text, DateTime, LargeBinary
 from sqlalchemy.orm import Mapped, mapped_column
 from config.database import Base
 from sqlalchemy import text

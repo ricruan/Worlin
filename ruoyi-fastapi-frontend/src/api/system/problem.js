@@ -1,6 +1,6 @@
 import request from '@/utils/request'
 
-// 查询岗位列表
+// 查询问题列表
 export function getPageList(query) {
   return request({
     url: '/wr/problem/pagelist',
@@ -9,36 +9,30 @@ export function getPageList(query) {
   })
 }
 
-// 查询岗位详细
-export function getPost(postId) {
+// 查询问题详细
+export function getDetail(id) {
   return request({
-    url: '/system/post/' + postId,
+    url: '/wr/problem/' + id,
     method: 'get'
   })
 }
 
-// 新增岗位
-export function addPost(data) {
+// 新增或修改问题
+export function insertOrUpdate(data) {
   return request({
-    url: '/system/post',
+    url: '/wr/problem/inserOrUpdate',
     method: 'post',
     data: data
   })
 }
 
-// 修改岗位
-export function updatePost(data) {
+// 删除问题
+export function deleteBatch(ids) {
   return request({
-    url: '/system/post',
-    method: 'put',
-    data: data
+    url: '/wr/problem/deleteBatch',
+    method: 'delete',
+    params: { ids }
   })
 }
 
-// 删除岗位
-export function delPost(postId) {
-  return request({
-    url: '/system/post/' + postId,
-    method: 'delete'
-  })
-}
+

@@ -21,20 +21,33 @@ class WrProblemService:
     
 
     @classmethod
-    async def insertOrUpdate(cls,query_db: AsyncSession,qeuryVo: WrProblemVO):
-        # user = await LoginService.get_current_user()
-        # TODO : 这里当前用户需要处理下
-        # qeuryVo.whenInsertOrUpdate(user.user_id)
+    async def insertOrUpdate(cls, query_db: AsyncSession, queryVo: WrProblemVO):
+        try:
+            # 打印接收到的数据
+            logger.info(f"Received data: {queryVo.model_dump()}")
+            
+            # 处理 enable_flag
+            if queryVo.enable_flag is not None:
+                queryVo.enable_flag = str(queryVo.enable_flag)
+            
+            # 设置更新时间和更新人
+            queryVo.whenInsertOrUpdate("")
 
-        qeuryVo.whenInsertOrUpdate("")
-
-
-        if qeuryVo.id :
-            return await WrProblemDao.update_problem(query_db,qeuryVo)
-        else :
-            return await WrProblemDao.add_problem(query_db,qeuryVo)
+            if queryVo.id:
+                logger.info(f"Updating problem with id: {queryVo.id}")
+                return await WrProblemDao.update_problem(query_db, queryVo)
+            else:
+                logger.info("Inserting new problem")
+                return await WrProblemDao.add_problem(query_db, queryVo)
+        except Exception as e:
+            logger.error(f"Error in insertOrUpdate: {str(e)}")
+            raise
         
-    
+    @classmethod
     async def deleteBatch(cls,query_db: AsyncSession,ids: str):
         return await WrProblemDao.delete_problems(query_db,ids)
+
+    @classmethod
+    async def getDetail(cls, query_db: AsyncSession, id: str):
+        return await WrProblemDao.get_problem_by_id(query_db, id)
 

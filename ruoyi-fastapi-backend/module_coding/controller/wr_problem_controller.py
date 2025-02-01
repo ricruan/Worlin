@@ -43,3 +43,11 @@ async def deleteBatch(
         ids: str,
         query_db: AsyncSession = Depends(get_db)) :
     return ResponseUtil.success(data = await WrProblemService.deleteBatch(query_db,ids))
+
+@wrProblemController.get("/{id}", response_model=WrProblemVO)
+async def getDetail(
+        request: Request,
+        id: str,
+        query_db: AsyncSession = Depends(get_db)) :
+    problem = await WrProblemService.getDetail(query_db, id)
+    return ResponseUtil.success(data = problem)
