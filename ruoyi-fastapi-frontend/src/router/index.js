@@ -43,8 +43,13 @@ export const constantRoutes = [
     hidden: true
   },
   {
-    path: '/coding',
-    component: () => import('@/views/coding/coding'),
+    path: '/codingPage',
+    component: () => import('@/views/coding/index'),
+    hidden: true
+  },
+  {
+    path: '/codingList',
+    component: () => import('@/views/coding/list/index'),
     hidden: true
   },
   {

@@ -17,6 +17,10 @@ from module_admin.dao.role_dao import RoleDao
 from module_admin.dao.user_dao import UserDao
 from utils.common_util import CamelCaseUtil, export_list2excel
 from utils.page_util import PageResponseModel
+from sqlalchemy import select
+from module_admin.entity.do.role_do import SysRole
+from module_admin.entity.do.user_do import SysUserRole
+from utils.log_util import logger
 
 
 class RoleService:
@@ -358,3 +362,37 @@ class RoleService:
         )
 
         return unallocated_list
+
+    @classmethod
+    async def get_role_list_by_user_id(cls, db: AsyncSession, user_id: str) -> list[SysRole]:
+        """
+        根据用户ID获取角色列表
+        
+        Args:
+            db: 数据库会话
+            user_id: 用户ID
+            
+        Returns:
+            list[SysRole]: 角色列表
+        """
+        try:
+            # 构建查询语句，通过user_role关联表查询角色信息
+            stmt = (
+                select(SysRole)
+                .join(SysUserRole, SysUserRole.role_id == SysRole.role_id)
+                .where(
+                    SysUserRole.user_id == user_id,
+                    SysRole.status == '0',  # 只查询正常状态的角色
+                    SysRole.del_flag == '0'  # 未删除的角色
+                )
+            )
+            
+            # 执行查询
+            result = await db.execute(stmt)
+            roles = result.scalars().all()
+            
+            return list(roles)
+            
+        except Exception as e:
+            logger.error(f"获取用户角色列表失败: {str(e)}")
+            return []

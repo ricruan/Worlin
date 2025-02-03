@@ -116,19 +116,36 @@ function handleLogin() {
         Cookies.remove("password");
         Cookies.remove("rememberMe");
       }
+
       // 调用action的登录方法
-      userStore.login(loginForm.value).then(() => {
+      userStore.login(loginForm.value).then((res) => {
+        // 从登录响应中获取角色ID列表
+        const roleIds = res.data?.roleIds || [];
+        
+        // 获取原始查询参数
         const query = route.query;
+        // 过滤掉 redirect 参数，保留其他查询参数
         const otherQueryParams = Object.keys(query).reduce((acc, cur) => {
           if (cur !== "redirect") {
             acc[cur] = query[cur];
           }
           return acc;
         }, {});
-        router.push({ path: redirect.value || "/", query: otherQueryParams });
+
+        // 判断用户是否拥有练习系统角色(roleId = 2)
+        if (roleIds.includes('2')) {
+          // 如果用户拥有练习系统角色，直接跳转到题目列表页
+          router.push('/codingList');
+        } else {
+          // 如果用户没有练习系统角色，跳转到原定路径或首页
+          router.push({ 
+            path: redirect.value || "/", 
+            query: otherQueryParams 
+          });
+        }
       }).catch(() => {
         loading.value = false;
-        // 重新获取验证码
+        // 登录失败时，如果开启了验证码，重新获取验证码
         if (captchaEnabled.value) {
           getCode();
         }

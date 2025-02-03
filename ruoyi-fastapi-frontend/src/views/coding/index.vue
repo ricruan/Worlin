@@ -6,7 +6,8 @@
                     <div style="height: 100%; float: left;">
                         <img src="../../assets/images/worlin.png" class="image-content">
                     </div>
-                    <el-button style="margin-left: 15%;">问题列表</el-button> </el-col>
+                    <el-button style="margin-left: 15%;" @click="goToList">问题列表</el-button>
+                </el-col>
                 <el-col :span="8" class="header-button"> <el-button >下一题</el-button> </el-col>
                 <el-col :span="8" class="header-button"> <el-button type="danger">登录/注册</el-button> </el-col>
             </el-row>
@@ -14,7 +15,12 @@
         <div class="code-body">
                 <div class="code-body-item">
                     <el-tabs v-model="activeName" @tab-click="handleClick">
-                        <el-tab-pane label="问题内容" name="first">问题内容</el-tab-pane>
+                        <el-tab-pane label="问题内容" name="first">
+                            <div class="problem-content">
+                                <h2 class="problem-title">{{ problemTitle }}</h2>
+                                <div class="problem-detail" v-html="problemContent"></div>
+                            </div>
+                        </el-tab-pane>
                         <el-tab-pane label="查询结果" name="second">查询结果</el-tab-pane>
                         <el-tab-pane label="用户讨论" name="third">用户讨论</el-tab-pane>
                         <el-tab-pane label="竞速排名" name="fourth">竞速排名</el-tab-pane>
@@ -48,10 +54,17 @@
   <script setup>
   import { ref, onMounted, onUnmounted } from 'vue';
   import * as monaco from 'monaco-editor';
+  import { useRoute, useRouter } from 'vue-router';
+  import { getDetail } from "@/api/system/problem";  // 导入获取详情的 API
   
+  const route = useRoute();
+  const router = useRouter();  // 添加 router
   const editorContainer = ref(null);
   const isConsoleVisible = ref(false);
   const logContent = ref('');
+  const activeName = ref('first');
+  const problemTitle = ref('');
+  const problemContent = ref('');
   let editor = null;
   let logInterval = null;
   let logLines = [];
@@ -111,7 +124,10 @@ const stopStreaming = ()=>{
           automaticLayout: true
         // ... 其他配置项
       });
-   });
+      
+      // 获取问题详情
+      getProblemDetail();
+  });
   
   onUnmounted(() => {
       if (editor) {
@@ -125,6 +141,27 @@ const stopStreaming = ()=>{
           return editor.getValue();
       }
   })
+  
+  // 获取问题详情
+  const getProblemDetail = async () => {
+    try {
+        const id = route.query.id;
+        if (id) {
+            const response = await getDetail(id);
+            const problem = response.data;
+            problemTitle.value = problem.problemTitle;
+            problemContent.value = problem.problemContent;
+            
+        }
+    } catch (error) {
+        console.error('获取问题详情失败:', error);
+    }
+};
+  
+  // 添加跳转到列表页的方法
+  const goToList = () => {
+    router.push('/codingList');
+  };
   
   </script>
   
@@ -165,24 +202,43 @@ const stopStreaming = ()=>{
     box-shadow: 
         2px 2px 4px rgba(0, 0, 0, 0.2), 
         4px 4px 8px rgba(0, 0, 0, 0.1);
-    height: 8%;
+    height: 6vh;  /* 使用视窗高度 */
     flex-grow: 1; 
    }
 
    .code-body{
     display: flex;
-    flex-grow: 1; 
+    height: 90vh;  /* 固定高度，预留空间给header和footer */
     margin-top: 15px;
+    overflow: hidden;  /* 防止内容溢出 */
    }
 
    .code-footer{
-    flex-grow: 1; 
-    height: 20%;
+    height: 8vh;  /* 使用视窗高度 */
    }
 
    .code-body-item{
     width: 50%;
-    flex-grow: 1;          /* 让子元素平分父容器宽度 */
+    height: 100%;  /* 继承父元素高度 */
+    overflow: auto;  /* 允许内容滚动 */
+   }
+
+   /* 让 el-tabs 容器也是 flex 布局 */
+   .code-body-item :deep(.el-tabs) {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+   }
+
+   /* 让 tab 内容区域可以滚动 */
+   .code-body-item :deep(.el-tabs__content) {
+    flex: 1;
+    overflow: hidden;
+   }
+
+   /* 让每个 tab-pane 都填满高度 */
+   .code-body-item :deep(.el-tab-pane) {
+    height: 100%;
    }
 
    .code-in-button {
@@ -190,10 +246,45 @@ const stopStreaming = ()=>{
    }
 
    .code-page{
-    height: 100%;
+    height: 100vh;  /* 使用视窗高度 */
     display: flex;
     flex-direction:column;
    }
 
+   .problem-content {
+    padding: 20px;
+    height: calc(100% - 40px);  /* 减去tabs的高度 */
+    overflow-y: auto;  /* 允许垂直滚动 */
+    box-sizing: border-box; /* 添加这行 */
+}
+
+.problem-title {
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 24px;
+}
+
+.problem-detail {
+    line-height: 1.6;
+    color: #666;
+}
+
+/* 确保富文本内容正确显示 */
+.problem-detail :deep(p) {
+    margin-bottom: 16px;
+}
+
+.problem-detail :deep(pre) {
+    background-color: #f5f5f5;
+    padding: 12px;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+.problem-detail :deep(code) {
+    background-color: #f5f5f5;
+    padding: 2px 4px;
+    border-radius: 2px;
+}
 
   </style>

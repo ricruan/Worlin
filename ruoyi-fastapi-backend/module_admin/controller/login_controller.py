@@ -13,6 +13,7 @@ from module_admin.entity.vo.login_vo import UserLogin, UserRegister, Token
 from module_admin.entity.vo.user_vo import CurrentUserModel, EditUserModel
 from module_admin.service.login_service import CustomOAuth2PasswordRequestForm, LoginService, oauth2_scheme
 from module_admin.service.user_service import UserService
+from module_admin.service.role_service import RoleService
 from utils.log_util import logger
 from utils.response_util import ResponseUtil
 
@@ -40,6 +41,11 @@ async def login(
         captchaEnabled=captcha_enabled,
     )
     result = await LoginService.authenticate_user(request, query_db, user)
+    
+    # 获取用户角色ID
+    user_roles = await RoleService.get_role_list_by_user_id(query_db, str(result[0].user_id))
+    role_ids = [str(role.role_id) for role in user_roles] if user_roles else []
+    
     access_token_expires = timedelta(minutes=JwtConfig.jwt_expire_minutes)
     session_id = str(uuid.uuid4())
     access_token = await LoginService.create_access_token(
@@ -74,7 +80,12 @@ async def login(
     request_from_redoc = request.headers.get('referer').endswith('redoc') if request.headers.get('referer') else False
     if request_from_swagger or request_from_redoc:
         return {'access_token': access_token, 'token_type': 'Bearer'}
-    return ResponseUtil.success(msg='登录成功', dict_content={'token': access_token})
+    return ResponseUtil.success(msg='登录成功', dict_content={
+        'token': access_token,
+        'roleIds': role_ids
+    },data = {
+        'roleIds': role_ids
+    })
 
 
 @loginController.get('/getInfo', response_model=CurrentUserModel)
