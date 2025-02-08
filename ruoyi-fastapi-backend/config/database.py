@@ -34,7 +34,3 @@ AsyncSessionLocal = async_sessionmaker(autocommit=False, autoflush=False, bind=a
 class Base(DeclarativeBase):
     pass
 
-# uuid 所有的非自增ID都可以使用这个类型
-uuidPk = Annotated[String(36), mapped_column(primary_key=True, server_default=text('uuid()'), default=lambda: str(uuid4()))]
-# 创建时间/更新时间
-create_time = Annotated[datetime,mapped_column(nullable=False, server_default=func.CURRENT_TIMESTAMP()),]

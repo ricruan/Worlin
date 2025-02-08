@@ -9,7 +9,7 @@
                     <el-button style="margin-left: 15%;" @click="goToList">问题列表</el-button>
                 </el-col>
                 <el-col :span="8" class="header-button"> <el-button >下一题</el-button> </el-col>
-                <el-col :span="8" class="header-button"> <el-button type="danger">登录/注册</el-button> </el-col>
+                <el-col :span="8" class="header-button"> <el-button type="danger">不要点我</el-button> </el-col>
             </el-row>
         </div>
         <div class="code-body">
@@ -21,7 +21,19 @@
                                 <div class="problem-detail" v-html="problemContent"></div>
                             </div>
                         </el-tab-pane>
-                        <el-tab-pane label="查询结果" name="second">查询结果</el-tab-pane>
+                        <el-tab-pane label="查询结果" name="second">
+                            <div class="result-container">
+                                <el-table v-if="queryResult.length > 0" :data="queryResult" height="500">
+                                    <el-table-column 
+                                        v-for="(value, key) in queryResult[0] || {}" 
+                                        :key="key"
+                                        :prop="key"
+                                        :label="key"
+                                    />
+                                </el-table>
+                                <div v-else class="empty-result">暂无查询结果</div>
+                            </div>
+                        </el-tab-pane>
                         <el-tab-pane label="用户讨论" name="third">用户讨论</el-tab-pane>
                         <el-tab-pane label="竞速排名" name="fourth">竞速排名</el-tab-pane>
                     </el-tabs>
@@ -33,7 +45,7 @@
                             <el-button  @click="runCode" type="primary">点击运行</el-button>
                             <el-button  @click="closeConsole">隐藏日志栏</el-button>
                         </div>
-                        <el-button class="code-in-button" type="success">保存并提交</el-button>
+                        <el-button class="code-in-button" type="success" @click="submitCode">保存并提交</el-button>
                     </div>
                 </div>
         </div>
@@ -43,7 +55,9 @@
             :rows="4"
             readonly
             placeholder="请输入内容"
-            v-model="logContent">
+            v-model="logContent"
+            style="height: 100%;"
+            >
             </el-input>
         </div>
     </div>
@@ -56,6 +70,8 @@
   import * as monaco from 'monaco-editor';
   import { useRoute, useRouter } from 'vue-router';
   import { getDetail } from "@/api/system/problem";  // 导入获取详情的 API
+  import { executeSQL, validateSQL } from '@/api/coding'
+  import { ElMessage } from 'element-plus'
   
   const route = useRoute();
   const router = useRouter();  // 添加 router
@@ -65,52 +81,61 @@
   const activeName = ref('first');
   const problemTitle = ref('');
   const problemContent = ref('');
+  const queryResult = ref([]);
+  const presetSql = ref('');
   let editor = null;
-  let logInterval = null;
-  let logLines = [];
-  let i = 0;
 
   const log = (message) => {
     logContent.value = logContent.value + "\n" +  message
 };
 
-
-  const startStreaming = (code) => {
-    
-     logLines = [
-      "正在准备执行...",
-       `执行SQL: ${code}`,
-      "开始连接数据库...",
-       "验证权限...",
-       "开始执行SQL...",
-     ]
-     logContent.value = logContent.value + "123"
-
-     i = 0;
-    logInterval = setInterval(() => {
-       if(i < logLines.length){
-          log(logLines[i++])
-       } else{
-            log("执行完毕")
-         clearInterval(logInterval)
-          logInterval = null
+  const runCode = async () => {
+    try {
+        log("开始执行代码");
+        const userSql = editor.getValue().trim();
+        let fullSql = '';
+        
+        // 处理预设SQL
+        if (presetSql.value) {
+            fullSql = presetSql.value.trim();
+            // 确保预设SQL以分号结尾
+            if (!fullSql.endsWith(';')) {
+                fullSql += ';';
+            }
+            fullSql += '\n';  // 添加换行分隔
         }
-    }, 200 + Math.random() * 300); // 随机间隔 200-500 毫秒
-  };
-
-const stopStreaming = ()=>{
-      if(logInterval){
-         clearInterval(logInterval)
-         logInterval = null
-      }
-}
-
-
-  function runCode() {
-    console.log("nnnnn")
-    isConsoleVisible.value = true;
-    startStreaming("select * from");
+        console.log(fullSql);
+        console.log(userSql);
+        // 在日志栏组件中打印准备执行的fullsql
+        log(`准备执行的SQL: ${fullSql}`);
+        // 处理用户SQL的起始分号
+        if (userSql.startsWith(';')) {
+            fullSql += userSql.slice(1);
+        } else {
+            fullSql += userSql;
+        }
+        
+        const response = await executeSQL(fullSql);
+        
+        // 处理查询结果
+        if (response.data.some(item => item.type === 'query')) {
+            activeName.value = 'second';
+            queryResult.value = response.data
+                .filter(item => item.type === 'query' && item.status === 'success')
+                .flatMap(item => item.data);
+        }
+        
+        // 记录执行日志
+        logContent.value = response.data
+            .map(item => `${item.type.toUpperCase()} [${item.status}]: ${item.message}`)
+            .join('\n');
+            
+    } catch (error) {
+        logContent.value = `执行出错: ${error.message}`;
+        queryResult.value = [];
     }
+    isConsoleVisible.value = true;
+};
 
     function closeConsole() {
         isConsoleVisible.value = false;
@@ -151,7 +176,7 @@ const stopStreaming = ()=>{
             const problem = response.data;
             problemTitle.value = problem.problemTitle;
             problemContent.value = problem.problemContent;
-            
+            presetSql.value = problem.presetCode || ''; // 获取预设SQL
         }
     } catch (error) {
         console.error('获取问题详情失败:', error);
@@ -162,6 +187,63 @@ const stopStreaming = ()=>{
   const goToList = () => {
     router.push('/codingList');
   };
+  
+  const submitCode = async () => {
+    try {
+        const userSql = editor.getValue().trim();
+        let fullSql = '';
+        
+        // 复用SQL拼接逻辑
+        if (presetSql.value) {
+            fullSql = presetSql.value.trim();
+            if (!fullSql.endsWith(';')) {
+                fullSql += ';';
+            }
+            fullSql += '\n';
+        }
+        
+        if (userSql.startsWith(';')) {
+            fullSql += userSql.slice(1);
+        } else {
+            fullSql += userSql;
+        }
+
+        const response = await validateSQL({
+            problem_id: route.query.id,
+            sql: fullSql
+        });
+
+        // 记录日志
+        logContent.value = `验证结果: ${response.data.status}\n${response.data.error || ''}`;
+        
+        // 处理结果展示
+        if (response.data.user_result) {
+            activeName.value = 'second';
+            queryResult.value = response.data.user_result
+                .filter(item => item.type === 'query' && item.status === 'success')
+                .flatMap(item => item.data);
+        }
+
+        // 显示验证结果弹窗
+        if (response.data.status === 'success') {
+            ElMessage.success({
+                message: '答题正确！',
+                duration: 3000
+            });
+        } else {
+            ElMessage.error({
+                message: '答案错误: ' + (response.data.error || '结果不匹配'),
+                duration: 5000
+            });
+        }
+
+    } catch (error) {
+        logContent.value = `验证出错: ${error.message}`;
+        queryResult.value = [];
+        ElMessage.error('验证请求失败: ' + error.message);
+    }
+    isConsoleVisible.value = true;
+};
   
   </script>
   
@@ -214,7 +296,7 @@ const stopStreaming = ()=>{
    }
 
    .code-footer{
-    height: 8vh;  /* 使用视窗高度 */
+    /* height: 200px; */
    }
 
    .code-body-item{
@@ -285,6 +367,32 @@ const stopStreaming = ()=>{
     background-color: #f5f5f5;
     padding: 2px 4px;
     border-radius: 2px;
+}
+
+.result-container {
+    padding: 20px;
+    height: calc(100% - 40px);
+    overflow: auto;
+}
+
+.empty-result {
+    color: #999;
+    text-align: center;
+    padding: 20px;
+}
+
+/* 优化弹窗样式 */
+.el-message {
+    font-size: 16px;
+    min-width: 300px;
+}
+.el-message-success {
+    background: #f0f9eb;
+    border-color: #e1f3d8;
+}
+.el-message-error {
+    background: #fef0f0;
+    border-color: #fde2e2;
 }
 
   </style>

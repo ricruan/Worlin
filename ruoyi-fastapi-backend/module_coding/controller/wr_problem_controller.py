@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Body
 from module_coding.service.wr_problem_service import WrProblemService
 from module_admin.annotation.log_annotation import Log
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -31,7 +31,7 @@ async def getList(
 @wrProblemController.post("/inserOrUpdate")
 async def insertOrUpdate(
         request: Request,
-        queryVo: WrProblemVO,
+        queryVo: WrProblemVO = Body(...),
         query_db: AsyncSession = Depends(get_db)) :
     return ResponseUtil.success(data = await WrProblemService.insertOrUpdate(query_db,queryVo))
 

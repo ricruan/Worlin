@@ -1,0 +1,19 @@
+/* 弹性布局优化 */
+.flex-column {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* 表单容器统一高度 */
+.form-container {
+  height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+
+/* 统一编辑器边框样式 */
+.editor-border {
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  overflow: hidden;
+} 

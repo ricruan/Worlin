@@ -23,10 +23,11 @@ from module_admin.controller.role_controller import roleController
 from module_admin.controller.server_controller import serverController
 from module_admin.controller.user_controller import userController
 from module_coding.controller.wr_problem_controller import wrProblemController
+from module_coding.controller.sql_exec_controller import sqlExecuteController
 from sub_applications.handle import handle_sub_applications
 from utils.common_util import worship
 from utils.log_util import logger
-
+from config.db_pool import init_db_pool, close_db_pool
 
 # 生命周期事件
 @asynccontextmanager
@@ -35,6 +36,7 @@ async def lifespan(app: FastAPI):
     worship()
     await init_create_table()
     app.state.redis = await RedisUtil.create_redis_pool()
+    await init_db_pool()
     await RedisUtil.init_sys_dict(app.state.redis)
     await RedisUtil.init_sys_config(app.state.redis)
     await SchedulerUtil.init_system_scheduler()
@@ -42,7 +44,7 @@ async def lifespan(app: FastAPI):
     yield
     await RedisUtil.close_redis_pool(app)
     await SchedulerUtil.close_system_scheduler()
-
+    await close_db_pool()
 
 # 初始化FastAPI对象
 app = FastAPI(
@@ -63,6 +65,7 @@ handle_exception(app)
 # 加载路由列表
 controller_list = [
     {'router': wrProblemController, 'tags': ['worlin-问题管理']},
+    {'router': sqlExecuteController, 'tags': ['worlin-SQL执行']},
     {'router': loginController, 'tags': ['登录模块']},
     {'router': captchaController, 'tags': ['验证码模块']},
     {'router': userController, 'tags': ['系统管理-用户管理']},

@@ -59,13 +59,7 @@ class WrProblemDao:
         """
         根据 ID 更新题目
         """
-        # 确保所有字符串字段使用utf8mb4编码
-        problem_dict = problem.model_dump()
-        for key, value in problem_dict.items():
-            if isinstance(value, str):
-                problem_dict[key] = value.encode('utf8').decode('utf8')
-                
-        bo = wrProblem(**problem_dict)
+        bo = wrProblem(**problem.model_dump())
         async with db as session:
             await session.merge(bo)
             await session.commit()

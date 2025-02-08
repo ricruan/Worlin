@@ -26,23 +26,21 @@ const emit = defineEmits(['update:value']);
 const editorContainer = ref(null);
 let editor = null;
 let oldValue = '';
-const defaultMinWidth = 600  // 新增： 默认最小宽度
-const containerWidth = ref(0) // 新增： 保存容器宽度
 
-const containerStyle = computed(()=>({
-    minWidth: `${defaultMinWidth}px`,
-  width: containerWidth.value > defaultMinWidth?  "100%" : `${defaultMinWidth}px` , // 根据父容器宽度来决定是否100%宽度
-}))
 
 
 const createEditor = () => {
-    if(!editorContainer.value) return
-      containerWidth.value =  editorContainer.value.offsetWidth; //初始化组件的时候获取宽度
+
    editor = monaco.editor.create(editorContainer.value, {
         value: props.value,
         language: props.language,
         ...props.options,
     });
+
+    // 设置编辑器容器的样式
+    editorContainer.value.style.width = '100%';
+    editorContainer.value.style.height = '100%';
+
     editor.onDidChangeModelContent((e) => {
       const newValue = editor.getValue();
       oldValue = newValue;
@@ -94,6 +92,5 @@ onUnmounted(() => {
 .monaco-editor-container {
   height: 100%;
   width: 100%;
-  display: inline-block; /* 修改这里为inline-block */
 }
 </style>

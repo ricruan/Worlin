@@ -1,7 +1,7 @@
 <template>
   <div class="login">
     <el-form ref="loginRef" :model="loginForm" :rules="loginRules" class="login-form">
-      <h3 class="title">vfadmin后台管理系统</h3>
+      <h3 class="title">沃林数据平台</h3>
       <el-form-item prop="username">
         <el-input
           v-model="loginForm.username"
@@ -132,8 +132,8 @@ function handleLogin() {
           return acc;
         }, {});
 
-        // 判断用户是否拥有练习系统角色(roleId = 2)
-        if (roleIds.includes('2')) {
+        // 判断用户是否在线编程刷题角色(roleId = 100)
+        if (roleIds.includes('100')) {
           // 如果用户拥有练习系统角色，直接跳转到题目列表页
           router.push('/codingList');
         } else {

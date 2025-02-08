@@ -49,5 +49,13 @@ class WrProblemService:
 
     @classmethod
     async def getDetail(cls, query_db: AsyncSession, id: str):
-        return await WrProblemDao.get_problem_by_id(query_db, id)
+        # 添加类型转换和错误处理
+        try:
+            problem_id = id
+            return await WrProblemDao.get_problem_by_id(query_db, problem_id)
+        except ValueError:
+            raise ValueError("无效的问题ID格式")
+        except Exception as e:
+            logger.error(f"获取问题详情失败: {str(e)}")
+            raise
 
